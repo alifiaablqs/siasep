@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\MonitoringApiController;
 Route::post('login', [AuthController::class, 'login']);
 
 // Authenticated routes
-Route::middleware('api.auth')->name('api.')->group(function () {
+Route::middleware('auth:sanctum')->name('api.')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);
 

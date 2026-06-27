@@ -67,12 +67,8 @@ class AuthController extends BaseApiController
             return $this->error('Akun ini tidak memiliki role.', 403);
         }
 
-        // Generate secure encrypted Bearer Token
-        $payload = [
-            'id' => $user->id,
-            'created_at' => now()->timestamp,
-        ];
-        $token = Crypt::encryptString(json_encode($payload));
+        // Generate secure encrypted Bearer Token with Sanctum
+        $token = $user->createToken('API-Token')->plainTextToken;
 
         return $this->success([
             'token' => $token,
@@ -94,7 +90,8 @@ class AuthController extends BaseApiController
      */
     public function logout(Request $request)
     {
-        return $this->success(null, 'Logout berhasil (silakan hapus token di sisi client).');
+        $request->user()->currentAccessToken()->delete();
+        return $this->success(null, 'Logout berhasil. Token telah dicabut dari server.');
     }
 
     /**

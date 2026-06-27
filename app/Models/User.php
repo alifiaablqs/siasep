@@ -11,17 +11,18 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 // use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes, CanResetPassword;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, CanResetPassword;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-    protected $fillable = ['firstname', 'lastname', 'nip', 'email', 'password', 'phone_number', 'kode_bagian', 'role_id_role', 'position_id_position', 'director_id_director', 'divisi_id_divisi', 'department_id_department', 'section_id_section', 'unit_id_unit', 'profile_image'];
+    protected $fillable = ['firstname', 'lastname', 'nip', 'email', 'password', 'phone_number', 'kode_bagian', 'role_id_role', 'position_id_position', 'director_id_director', 'divisi_id_divisi', 'department_id_department', 'section_id_section', 'unit_id_unit', 'profile_image', 'is_active'];
 
     /**
      * The attributes that should be hidden for serialization.
