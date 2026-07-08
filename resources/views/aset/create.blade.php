@@ -325,8 +325,11 @@
                                                         if (isset($seen[$key])) return; // Skip duplicate
                                                         $seen[$key] = true;
 
+                                                        $statusLabel = (!isset($node->is_active) || $node->is_active) ? '' : ' (Nonaktif)';
+                                                        $disabledAttr = (!isset($node->is_active) || $node->is_active) ? '' : ' disabled';
+
                                                         $selected = old('kode_organisasi') == $key ? 'selected' : '';
-                                                        echo "<option value='{$key}' data-label='{$label}' {$selected}>{$indent}{$printLabel}</option>";
+                                                        echo "<option value='{$key}' data-label='{$label}' {$selected} {$disabledAttr}>{$indent}{$printLabel}{$statusLabel}</option>";
                                                     }
 
                                                     if (isset($node->subDirectors)) foreach ($node->subDirectors as $s) renderOrgOptions($s, $seen, $level + 1);

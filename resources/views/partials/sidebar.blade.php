@@ -122,6 +122,19 @@
                     <span class="text-section">Lainnya</span>
                 </li>
 
+                @php
+                    $verificationCount = \App\Models\DataAset::needsVerification()->count();
+                @endphp
+                <li class="nav-item {{ request()->routeIs('aset.verifikasi') ? 'active_' : '' }}">
+                    <a href="{{ route('aset.verifikasi') }}" class="nav-link">
+                        <i class="fas fa-clipboard-check text-warning"></i>
+                        <p>Verifikasi Aset</p>
+                        @if($verificationCount > 0)
+                            <span class="badge badge-warning">{{ $verificationCount }}</span>
+                        @endif
+                    </a>
+                </li>
+
                 {{-- Pengaturan --}}
                 @php
                     $isPengaturanActive = request()->is('organization-manage*') || request()->is('kode-bagian*') || request()->is('user-manage*') || request()->is('role-management*') || request()->is('permission-manage*');
@@ -276,6 +289,19 @@
 
                 <li class="nav-section">
                     <span class="text-section">Lainnya</span>
+                </li>
+
+                @php
+                    $verificationCountGA = \App\Models\DataAset::needsVerification()->count();
+                @endphp
+                <li class="nav-item {{ request()->routeIs('aset.verifikasi') ? 'active_' : '' }}">
+                    <a href="{{ route('aset.verifikasi') }}" class="nav-link">
+                        <i class="fas fa-clipboard-check text-warning"></i>
+                        <p>Verifikasi Aset</p>
+                        @if($verificationCountGA > 0)
+                            <span class="badge badge-warning">{{ $verificationCountGA }}</span>
+                        @endif
+                    </a>
                 </li>
 
                 <li class="nav-item {{ request()->routeIs('organization.manageOrganization') ? 'active_' : '' }}">

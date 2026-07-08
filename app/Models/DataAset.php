@@ -33,6 +33,9 @@ class DataAset extends Model
         'status_aset',
         'keterangan',
         'dokumen_penghapusan',
+        'needs_org_verification',
+        'needs_pic_verification',
+        'needs_pj_verification',
     ];
 
     protected $casts = [
@@ -101,12 +104,40 @@ class DataAset extends Model
 
     public function getOrganisasiTerikatAttribute(): string
     {
-        if ($this->id_unit && $this->unit) return $this->unit->name_unit;
-        if ($this->id_section && $this->section) return $this->section->name_section;
-        if ($this->id_department && $this->department) return $this->department->name_department;
-        if ($this->id_divisi && $this->divisi) return $this->divisi->nm_divisi;
-        if ($this->id_director && $this->director) return $this->director->name_director;
+        if ($this->id_unit && $this->unit) return $this->unit->name_unit . (isset($this->unit->is_active) && !$this->unit->is_active ? ' (Nonaktif)' : '');
+        if ($this->id_section && $this->section) return $this->section->name_section . (isset($this->section->is_active) && !$this->section->is_active ? ' (Nonaktif)' : '');
+        if ($this->id_department && $this->department) return $this->department->name_department . (isset($this->department->is_active) && !$this->department->is_active ? ' (Nonaktif)' : '');
+        if ($this->id_divisi && $this->divisi) return $this->divisi->nm_divisi . (isset($this->divisi->is_active) && !$this->divisi->is_active ? ' (Nonaktif)' : '');
+        if ($this->id_director && $this->director) return $this->director->name_director . (isset($this->director->is_active) && !$this->director->is_active ? ' (Nonaktif)' : '');
         return 'Tanpa Organisasi';
+    }
+
+    public function hasVerificationIssues(): bool
+    {
+        $picIssue = $this->needs_pic_verification || ($this->pic_id && (!$this->pic || !$this->pic->is_active));
+        $pjIssue = $this->needs_pj_verification || ($this->penanggung_jawab_id && (!$this->penanggungJawab || !$this->penanggungJawab->is_active));
+        
+        return $this->needs_org_verification || $picIssue || $pjIssue;
+    }
+
+    public function getVerificationBadges(): array
+    {
+        $badges = [];
+        if ($this->needs_org_verification) {
+            $badges[] = 'Organisasi';
+        }
+        
+        $picIssue = $this->needs_pic_verification || ($this->pic_id && (!$this->pic || !$this->pic->is_active));
+        if ($picIssue) {
+            $badges[] = 'PIC';
+        }
+        
+        $pjIssue = $this->needs_pj_verification || ($this->penanggung_jawab_id && (!$this->penanggungJawab || !$this->penanggungJawab->is_active));
+        if ($pjIssue) {
+            $badges[] = 'Penanggung Jawab';
+        }
+        
+        return array_unique($badges);
     }
 
     public function getResolvedDepartmentNameAttribute(): string
@@ -398,5 +429,51 @@ class DataAset extends Model
                 $q->whereRaw('1 = 0');
             }
         });
+    }
+
+    /**
+     * Scope untuk aset yang butuh verifikasi
+     */
+    public function scopeNeedsVerification($query)
+    {
+        return $query->where(function($q) {
+            $q->where('needs_org_verification', true)
+              ->orWhere('needs_pic_verification', true)
+              ->orWhere('needs_pj_verification', true)
+              ->orWhere(function($subQ) {
+                  $subQ->whereNotNull('pic_id')
+                       ->whereDoesntHave('pic', function($userQ) {
+                           $userQ->where('is_active', true);
+                       });
+              })
+              ->orWhere(function($subQ) {
+                  $subQ->whereNotNull('penanggung_jawab_id')
+                       ->whereDoesntHave('penanggungJawab', function($userQ) {
+                           $userQ->where('is_active', true);
+                       });
+              });
+        });
+    }
+
+    /**
+     * Scope untuk aset yang sudah terverifikasi / bersih
+     */
+    public function scopeVerified($query)
+    {
+        return $query->where('needs_org_verification', false)
+                     ->where('needs_pic_verification', false)
+                     ->where('needs_pj_verification', false)
+                     ->where(function($q) {
+                         $q->whereNull('pic_id')
+                           ->orWhereHas('pic', function($userQ) {
+                               $userQ->where('is_active', true);
+                           });
+                     })
+                     ->where(function($q) {
+                         $q->whereNull('penanggung_jawab_id')
+                           ->orWhereHas('penanggungJawab', function($userQ) {
+                               $userQ->where('is_active', true);
+                           });
+                     });
     }
 }

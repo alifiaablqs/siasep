@@ -8,7 +8,7 @@ class Unit extends Model
 {
     protected $table = 'unit';
     protected $primaryKey = 'id_unit';
-    protected $fillable = ['name_unit'];
+    protected $fillable = ['name_unit', 'department_id_department', 'section_id_section', 'is_active'];
 
     public $timestamps = false;
 

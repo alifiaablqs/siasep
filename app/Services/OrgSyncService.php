@@ -64,6 +64,8 @@ class OrgSyncService
             'errors' => 0,
         ];
 
+        $activeUserNips = [];
+
         // Unguard model agar bebas melakukan insert/update kolom apa saja
         Model::unguard();
 
@@ -272,6 +274,8 @@ class OrgSyncService
                         ->orWhere('email', $u['email'])
                         ->first();
 
+                    $activeUserNips[] = $u['nip'];
+
                     $userDataToSave = [
                         'firstname' => $firstname,
                         'lastname' => $lastname,
@@ -303,11 +307,29 @@ class OrgSyncService
                     $stats['errors']++;
                 }
             }
+
+            // 3. Deactivate users missing from SIPO
+            if (!empty($activeUserNips)) {
+                $deletedUsers = User::whereNotIn('nip', $activeUserNips)->where('is_active', true)->get();
+                foreach ($deletedUsers as $user) {
+                    $user->update(['is_active' => false]);
+
+                    $affectedPic = \App\Models\DataAset::where('pic_id', $user->id)->update(['needs_pic_verification' => true]);
+                    $affectedPj = \App\Models\DataAset::where('penanggung_jawab_id', $user->id)->update(['needs_pj_verification' => true]);
+
+                    if ($affectedPic > 0 || $affectedPj > 0) {
+                        Log::warning("User NIP {$user->nip} tidak ada di SIPO. Diset menjadi nonaktif. {$affectedPic} aset perlu verifikasi PIC, {$affectedPj} aset perlu verifikasi PJ.");
+                    }
+                }
+            }
+
         });
 
         Model::reguard();
 
         Log::info('Sinkronisasi data API eksternal selesai.', $stats);
+
+        $this->notifyVerificationNeeded();
 
         return $stats;
     }
@@ -392,9 +414,17 @@ class OrgSyncService
             'errors' => 0,
         ];
 
+        $activeIds = [
+            'directors' => [],
+            'divisis' => [],
+            'departments' => [],
+            'sections' => [],
+            'units' => [],
+        ];
+
         Model::unguard();
 
-        DB::transaction(function () use ($token, &$stats) {
+        DB::transaction(function () use ($token, &$stats, &$activeIds) {
             // a. Sinkronisasi Struktur Organisasi
             try {
                 $orgData = $this->fetchOrgStructure($token);
@@ -403,13 +433,13 @@ class OrgSyncService
                     if (isset($orgData['type'])) {
                         // Single node
                         Log::info('Processing single org node: ' . ($orgData['name'] ?? 'no-name'));
-                        $this->processOrgNode($orgData, null, null, null, null, $stats);
+                        $this->processOrgNode($orgData, null, null, null, null, $stats, $activeIds);
                     } else {
                         // Array of nodes
                         Log::info('Processing multiple org nodes. Count: ' . count($orgData));
                         foreach ($orgData as $node) {
                             if (is_array($node)) {
-                                $this->processOrgNode($node, null, null, null, null, $stats);
+                                $this->processOrgNode($node, null, null, null, null, $stats, $activeIds);
                             }
                         }
                     }
@@ -441,19 +471,59 @@ class OrgSyncService
                 Log::error("Gagal menyinkronkan bagian kerja. Error: " . $e->getMessage());
                 throw $e;
             }
+
+            // c. Soft deactivation for missing orgs
+            $this->reconcileDeletedNodes($activeIds);
+
+           
+
         });
 
         Model::reguard();
 
         Log::info('Sinkronisasi struktur organisasi dan bagian kerja selesai.', $stats);
 
+        $this->notifyVerificationNeeded();
+
         return $stats;
+    }
+
+    /**
+     * Nonaktifkan node organisasi yang tidak ada di SIPO dan flag aset terkait.
+     */
+    protected function reconcileDeletedNodes(array $activeIds): void
+    {
+        $entities = [
+            'directors' => ['model' => Director::class, 'id_field' => 'id_director', 'fk' => 'id_director', 'name_field' => 'name_director'],
+            'divisis' => ['model' => Divisi::class, 'id_field' => 'id_divisi', 'fk' => 'id_divisi', 'name_field' => 'nm_divisi'],
+            'departments' => ['model' => Department::class, 'id_field' => 'id_department', 'fk' => 'id_department', 'name_field' => 'name_department'],
+            'sections' => ['model' => Section::class, 'id_field' => 'id_section', 'fk' => 'id_section', 'name_field' => 'name_section'],
+            'units' => ['model' => Unit::class, 'id_field' => 'id_unit', 'fk' => 'id_unit', 'name_field' => 'name_unit'],
+        ];
+
+        foreach ($entities as $key => $config) {
+            if (!empty($activeIds[$key])) {
+                $deletedNodes = $config['model']::whereNotIn($config['id_field'], $activeIds[$key])
+                    ->where('is_active', true)
+                    ->get();
+
+                foreach ($deletedNodes as $node) {
+                    $node->update(['is_active' => false]);
+                    $affected = \App\Models\DataAset::where($config['fk'], $node->{$config['id_field']})
+                        ->update(['needs_org_verification' => true]);
+
+                    if ($affected > 0) {
+                        Log::warning("Organisasi {$key} '{$node->{$config['name_field']}}' (ID: {$node->{$config['id_field']}}) tidak ada di SIPO. Diset nonaktif. {$affected} aset perlu verifikasi.");
+                    }
+                }
+            }
+        }
     }
 
     /**
      * Traversal rekursif untuk memproses node struktur organisasi.
      */
-    protected function processOrgNode(array $node, ?int $parentDirectorId, ?int $parentDivisiId, ?int $parentDeptId, ?int $parentSectionId, array &$stats)
+    protected function processOrgNode(array $node, ?int $parentDirectorId, ?int $parentDivisiId, ?int $parentDeptId, ?int $parentSectionId, array &$stats, array &$activeIds = [])
     {
         $type = $node['type'] ?? null;
         $id = $node['id'] ?? null;
@@ -477,6 +547,7 @@ class OrgSyncService
             );
             $directorId = $id;
             $stats['directors']++;
+            $activeIds['directors'][] = $id;
         } elseif ($type === 'divisi') {
             Divisi::updateOrCreate(
                 ['id_divisi' => $id],
@@ -488,6 +559,7 @@ class OrgSyncService
             );
             $divisiId = $id;
             $stats['divisis']++;
+            $activeIds['divisis'][] = $id;
         } elseif ($type === 'department') {
             Department::updateOrCreate(
                 ['id_department' => $id],
@@ -500,6 +572,7 @@ class OrgSyncService
             );
             $deptId = $id;
             $stats['departments']++;
+            $activeIds['departments'][] = $id;
         } elseif ($type === 'section') {
             Section::updateOrCreate(
                 ['id_section' => $id],
@@ -510,6 +583,7 @@ class OrgSyncService
             );
             $sectionId = $id;
             $stats['sections']++;
+            $activeIds['sections'][] = $id;
         } elseif ($type === 'unit') {
             Unit::updateOrCreate(
                 ['id_unit' => $id],
@@ -520,11 +594,12 @@ class OrgSyncService
                 ]
             );
             $stats['units']++;
+            $activeIds['units'][] = $id;
         }
 
         if (isset($node['children']) && is_array($node['children'])) {
             foreach ($node['children'] as $child) {
-                $this->processOrgNode($child, $directorId, $divisiId, $deptId, $sectionId, $stats);
+                $this->processOrgNode($child, $directorId, $divisiId, $deptId, $sectionId, $stats, $activeIds);
             }
         }
     }
@@ -581,5 +656,29 @@ class OrgSyncService
         }
 
         throw new \Exception("Format respon bagian kerja tidak valid (bukan array): " . json_encode($data));
+    }
+
+    /**
+     * Cek apakah ada aset yang perlu verifikasi dan kirim notifikasi ke superadmin
+     */
+    protected function notifyVerificationNeeded(): void
+    {
+        try {
+            $assetsNeedVerification = \App\Models\DataAset::needsVerification()->count();
+            if ($assetsNeedVerification > 0) {
+                $superadmins = User::where('role_id_role', 1)->get();
+                foreach ($superadmins as $admin) {
+                    $admin->notify(new \App\Notifications\SystemNotification(
+                        'Verifikasi Aset (Sinkronisasi SIPO)',
+                        "Terdapat {$assetsNeedVerification} data aset yang memerlukan verifikasi karena perubahan organisasi atau PIC dari SIPO.",
+                        route('aset.verifikasi'),
+                        'warning'
+                    ));
+                }
+                Log::info("Notifikasi verifikasi aset telah dikirim ke superadmin.");
+            }
+        } catch (\Exception $e) {
+            Log::error("Gagal mengirim notifikasi verifikasi aset: " . $e->getMessage());
+        }
     }
 }

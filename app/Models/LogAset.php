@@ -33,11 +33,11 @@ class LogAset extends Model
 
     public function getOrganisasiTerikatAttribute(): string
     {
-        if ($this->id_unit && $this->unit) return "Unit: " . $this->unit->name_unit;
-        if ($this->id_section && $this->section) return "Bagian: " . $this->section->name_section;
-        if ($this->id_department && $this->department) return "Departemen: " . $this->department->name_department;
-        if ($this->id_divisi && $this->divisi) return "Divisi: " . $this->divisi->nm_divisi;
-        if ($this->id_director && $this->director) return "Direktur: " . $this->director->name_director;
+        if ($this->id_unit && $this->unit) return "Unit: " . $this->unit->name_unit . (isset($this->unit->is_active) && !$this->unit->is_active ? ' (Nonaktif)' : '');
+        if ($this->id_section && $this->section) return "Bagian: " . $this->section->name_section . (isset($this->section->is_active) && !$this->section->is_active ? ' (Nonaktif)' : '');
+        if ($this->id_department && $this->department) return "Departemen: " . $this->department->name_department . (isset($this->department->is_active) && !$this->department->is_active ? ' (Nonaktif)' : '');
+        if ($this->id_divisi && $this->divisi) return "Divisi: " . $this->divisi->nm_divisi . (isset($this->divisi->is_active) && !$this->divisi->is_active ? ' (Nonaktif)' : '');
+        if ($this->id_director && $this->director) return "Direktur: " . $this->director->name_director . (isset($this->director->is_active) && !$this->director->is_active ? ' (Nonaktif)' : '');
         return 'Tanpa Organisasi';
     }
 

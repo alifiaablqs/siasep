@@ -46,6 +46,19 @@
                     </ul>
                 </div>
             @endif
+
+            @if($aset->hasVerificationIssues())
+                <div class="alert alert-warning border-warning d-flex align-items-center py-3 px-4 mb-4 rounded-3 shadow-sm" role="alert">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3 text-warning"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1 text-dark">Data Memerlukan Verifikasi (Dampak Sinkronisasi SIPO)</h6>
+                        <span class="small m-0 text-dark">
+                            Beberapa data terkait aset ini (<strong>{{ implode(', ', $aset->getVerificationBadges()) }}</strong>) sudah tidak aktif di SIPO. 
+                            Harap perbarui <strong>Struktur Organisasi</strong> atau <strong>PIC/Penanggung Jawab</strong> agar sesuai dengan struktur terbaru.
+                        </span>
+                    </div>
+                </div>
+            @endif
             
             @php
                 $nomorAsetParts = explode('/', $aset->nomor_aset);
@@ -305,8 +318,11 @@
                                                         if (isset($seen[$key])) return;
                                                         $seen[$key] = true;
 
+                                                        $statusLabel = (!isset($node->is_active) || $node->is_active) ? '' : ' (Nonaktif)';
                                                         $selected = ($currentKey == $key) ? 'selected' : '';
-                                                        echo "<option value='{$key}' data-label='{$label}' {$selected}>{$indent}{$prefix}{$label}</option>";
+                                                        $disabledAttr = (!$selected && (isset($node->is_active) && !$node->is_active)) ? 'disabled' : '';
+
+                                                        echo "<option value='{$key}' data-label='{$label}' {$selected} {$disabledAttr}>{$indent}{$prefix}{$label}{$statusLabel}</option>";
                                                     }
 
                                                     if (isset($node->subDirectors)) foreach ($node->subDirectors as $s) renderOrgOptions($s, $currentKey, $seen, $level + 1);

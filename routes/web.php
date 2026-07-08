@@ -132,6 +132,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Data Aset
     Route::get('/aset', [DataAsetController::class, 'index'])->name('aset.index');
+    Route::get('/aset-verifikasi', [DataAsetController::class, 'verificationIndex'])->name('aset.verifikasi');
     Route::get('/aset-pic', [DataAsetController::class, 'picIndex'])->name('aset.pic');
     
     // Action handler untuk redirect dari QR Scan Publik

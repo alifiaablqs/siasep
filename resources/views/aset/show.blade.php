@@ -39,6 +39,19 @@
     <div class="card shadow-sm border-0">
         <div class="card-body">
 
+            @if($aset->hasVerificationIssues())
+                <div class="alert alert-warning border-warning d-flex align-items-center py-3 px-4 mb-4 rounded-3 shadow-sm" role="alert">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3 text-warning"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1 text-dark">Data Memerlukan Verifikasi (Dampak Sinkronisasi SIPO)</h6>
+                        <span class="small m-0 text-dark">
+                            Beberapa data terkait aset ini (<strong>{{ implode(', ', $aset->getVerificationBadges()) }}</strong>) sudah tidak aktif di SIPO. 
+                            Harap segera <a href="{{ route('aset.edit', $aset->id) }}" class="fw-bold text-navy">Edit Data Aset</a> untuk menyesuaikan dengan kondisi riil.
+                        </span>
+                    </div>
+                </div>
+            @endif
+
             <div class="row">
                 {{-- SISI KIRI: QR CODE & FOTO --}}
                 <div class="col-lg-4">

@@ -39,7 +39,7 @@ class DataAsetController extends Controller
             $orderBy = 'asc';
         }
 
-        $query = DataAset::with(['kategoriAset', 'director', 'divisi', 'department', 'section', 'unit', 'lokasi', 'pic', 'fotoPertama']);
+        $query = DataAset::verified()->with(['kategoriAset', 'director', 'divisi', 'department', 'section', 'unit', 'lokasi', 'pic', 'fotoPertama']);
 
         $user = auth()->user();
         $isAdmin = $user->role_id_role == 1 || $user->isBagianUmum();
@@ -161,7 +161,7 @@ class DataAsetController extends Controller
         $jenisKategoriId = $request->input('jenis_kategori_id');
         $kategoriId = $request->input('kategori_id');
 
-        $query = DataAset::with(['kategoriAset', 'director', 'divisi', 'department', 'section', 'unit', 'lokasi', 'pic', 'fotoPertama']);
+        $query = DataAset::verified()->with(['kategoriAset', 'director', 'divisi', 'department', 'section', 'unit', 'lokasi', 'pic', 'fotoPertama']);
 
         $user = auth()->user();
 
@@ -218,6 +218,41 @@ class DataAsetController extends Controller
         $pageTitle = "Data Aset PIC Saya";
 
         return view('aset.index', compact('asets', 'lokasis', 'departments', 'divisis', 'pageTitle', 'jenisList', 'kategoris'));
+    }
+
+    /**
+     * Menampilkan daftar aset yang membutuhkan verifikasi.
+     */
+    public function verificationIndex(Request $request)
+    {
+        $perPage = $request->input('per_page', 10);
+        $search  = $request->input('search');
+
+        $query = DataAset::needsVerification()->with(['kategoriAset', 'director', 'divisi', 'department', 'section', 'unit', 'lokasi', 'pic', 'fotoPertama']);
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_aset', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_aset', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $asets = $query->latest()
+                       ->paginate($perPage)
+                       ->withQueryString();
+
+        $pageTitle = "Verifikasi Aset";
+        
+        // Kita butuh variabel kosong untuk menghindari error di view aset.index jika dipakai ulang (atau nanti pakai view terpisah)
+        $lokasis = LokasiAset::all();
+        $departments = collect();
+        $divisis = collect();
+        $jenisList = collect();
+        $kategoris = collect();
+        $showAdminActions = false;
+        $filterOwnDept = false;
+
+        return view('aset.verification', compact('asets', 'lokasis', 'departments', 'divisis', 'pageTitle', 'jenisList', 'kategoris', 'showAdminActions', 'filterOwnDept'));
     }
 
     /**
@@ -463,6 +498,10 @@ class DataAsetController extends Controller
 
 
 
+        // Simpan state lama untuk pengecekan log
+        $oldOrgName = $aset->organisasi_terikat;
+        $wasNeedingVerification = $aset->hasVerificationIssues();
+
         if (isset($validatedData['kode_organisasi'])) {
             $parts = explode('_', $validatedData['kode_organisasi']);
             if (count($parts) === 2) {
@@ -482,7 +521,24 @@ class DataAsetController extends Controller
             unset($validatedData['kode_organisasi']);
         }
 
+        // Clear verification flags since the data is now being manually updated/verified
+        $validatedData['needs_org_verification'] = false;
+        $validatedData['needs_pic_verification'] = false;
+        $validatedData['needs_pj_verification'] = false;
+
         $aset->update($validatedData);
+
+        // Jika sebelumnya butuh verifikasi dan organisasi berubah, catat ke LogAset
+        $newOrgName = $aset->fresh()->organisasi_terikat;
+        if ($wasNeedingVerification && $oldOrgName !== $newOrgName) {
+            \App\Models\LogAset::create([
+                'aset_id' => $aset->id,
+                'user_id' => auth()->id(),
+                'tanggal_cek' => now(),
+                'kondisi' => $aset->status_kondisi,
+                'keterangan' => "Aset diverifikasi dan dipindahkan dari [{$oldOrgName}] ke [{$newOrgName}].",
+            ]);
+        }
 
 
 

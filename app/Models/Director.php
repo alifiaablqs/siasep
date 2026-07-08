@@ -8,7 +8,7 @@ class Director extends Model
 {
     protected $table = 'director';
     protected $primaryKey = 'id_director';
-    protected $fillable = ['name_director'];
+    protected $fillable = ['name_director', 'kode_director', 'parent_director_id', 'is_main', 'is_active'];
 
     public $timestamps = false;
 

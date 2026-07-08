@@ -32,41 +32,9 @@
         <div class="card-body">
             <form method="GET" action="{{ url()->current() }}">
                 
-                {{-- Tombol-Tombol Action Utama --}}
-                <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center mb-3 pb-3 border-bottom">
-                    @if($showAdminActions)
-                        {{-- Tombol Cetak Label Terpilih --}}
-                        <button type="button" id="btnCetakLabelSelected" class="btn btn-dark px-2 px-md-3 rounded-3 d-flex align-items-center text-white" title="Cetak Label Terpilih">
-                            <i class="fas fa-tags"></i><span class="d-none d-md-inline ms-1"> Cetak Label</span>
-                        </button>
-
-                        {{-- Tombol Cetak Label Per Ruangan --}}
-                        <button type="button" class="btn btn-secondary px-2 px-md-3 rounded-3 d-flex align-items-center text-white" title="Cetak Per Ruangan" data-bs-toggle="modal" data-bs-target="#modalCetakPerRuangan">
-                            <i class="fas fa-building"></i><span class="d-none d-md-inline ms-1"> Cetak Per Ruangan</span>
-                        </button>
-
-                        {{-- Tombol Import --}}
-                        <button type="button" class="btn btn-warning px-2 px-md-3 rounded-3 d-flex align-items-center text-dark" title="Import Data" data-bs-toggle="modal" data-bs-target="#modalImportAset">
-                            <i class="fas fa-file-import"></i><span class="d-none d-md-inline ms-1"> Import</span>
-                        </button>
-
-                        {{-- Tombol Export --}}
-                        <a href="{{ route('aset.export', request()->query()) }}" class="btn btn-success px-2 px-md-3 rounded-3 d-flex align-items-center text-white" title="Export Data">
-                            <i class="fas fa-file-excel"></i><span class="d-none d-md-inline ms-1"> Export</span>
-                        </a>
-                    @endif
-
-                    {{-- Tombol Scan --}}
-                    <a href="{{ route('aset.scanner') }}" class="btn btn-navy px-2 px-md-3 rounded-3 d-flex align-items-center text-white" style="background-color: #253070;" title="Scan Barcode">
-                        <i class="fas fa-qrcode"></i><span class="d-none d-md-inline ms-1"> Scan Barcode</span>
-                    </a>
-
-                    @if($showAdminActions)
-                        {{-- Button Tambah --}}
-                        <a href="{{ route('aset.create') }}" class="btn btn-primary px-2 px-md-3 rounded-3 d-flex align-items-center">
-                            <i class="fas fa-plus"></i><span class="d-none d-sm-inline ms-1"> Tambah Data Aset</span>
-                        </a>
-                    @endif
+                <div class="alert alert-warning mb-3 border-0 shadow-sm rounded-3">
+                    <i class="fas fa-exclamation-triangle fa-lg mt-1"></i>
+                    <strong>Perhatian!</strong> Daftar aset di bawah ini telah terpengaruh oleh Sinkronisasi SIPO (seperti Departemen/Divisi). Silakan tekan tombol <strong>Lihat/Edit</strong> pada masing-masing aset untuk memperbarui struktur organisasinya.
                 </div>
 
                 {{-- Form Filter, Pencarian & Reset --}}
@@ -271,22 +239,13 @@
                                             <i class="fa-solid fa-eye"></i>
                                         </a>
 
-                                        @if($showAdminActions)
                                             {{-- TOMBOL EDIT --}}
                                             <a href="{{ route('aset.edit', $aset->id) }}" 
                                             class="btn btn-warning btn-sm rounded-circle text-white border-0"
                                             style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"
-                                            title="Edit">
+                                            title="Verifikasi (Edit)">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-
-                                            {{-- TOMBOL HAPUS --}}
-                                            <button type="button" class="btn btn-danger btn-sm rounded-circle text-white border-0" 
-                                                    style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"
-                                                    title="Hapus" data-bs-toggle="modal" data-bs-target="#deleteAsetModal{{ $aset->id }}">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        @endif
                                     </div>
 
                                     <!-- Modal Konfirmasi Hapus -->

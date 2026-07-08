@@ -38,11 +38,12 @@ class OrganizationController extends Controller
         $name = $director->name_director;
         $kode = $director->kode_director ?? '';
         $deleteUrl = route('organization.delete', ['type' => $type, 'id' => $id]);
+        $statusBadge = (isset($director->is_active) && !$director->is_active) ? '<span class="badge bg-danger ms-1" style="font-size:0.6rem; vertical-align: middle;">Nonaktif</span>' : '';
         $node = [
             'text' => ['name' => $name],
             'innerHTML' =>
             '<div class="custom-node" data-id="' . $id . '">
-                <div class="custom-node-title">' . htmlspecialchars($name) . '</div>
+                <div class="custom-node-title">' . htmlspecialchars($name) . $statusBadge . '</div>
                 <div class="custom-node-actions">
                     <button class="custom-btn edit-btn" data-bs-toggle="modal" data-bs-target="#editModal" data-type="' . $type . '" data-id="' . $id . '" data-name="' . htmlspecialchars($name, ENT_QUOTES) . '" data-kode="' . htmlspecialchars($kode, ENT_QUOTES) . '"><i class="far fa-edit" style="color: white;" alt="Edit"></i>
 </button>
@@ -68,10 +69,11 @@ class OrganizationController extends Controller
             $name = $divisi->nm_divisi;
             $kode = $divisi->kode_divisi ?? '';
             $deleteUrl = route('organization.delete', ['type' => $type, 'id' => $id]);
+            $statusBadge = (isset($divisi->is_active) && !$divisi->is_active) ? '<span class="badge bg-danger ms-1" style="font-size:0.6rem; vertical-align: middle;">Nonaktif</span>' : '';
             $divisiNode = [
                 'innerHTML' =>
                 '<div class="custom-node">
-                    <div class="custom-node-title">' . htmlspecialchars($name) . '</div>
+                    <div class="custom-node-title">' . htmlspecialchars($name) . $statusBadge . '</div>
                     <div class="custom-node-actions">
                         <button class="custom-btn edit-btn" data-bs-toggle="modal" data-bs-target="#editModal" data-type="' . $type . '" data-id="' . $id . '" data-name="' . htmlspecialchars($name, ENT_QUOTES) . '" data-kode="' . htmlspecialchars($kode, ENT_QUOTES) . '"><i class="far fa-edit" style="color: white;" alt="Edit"></i></button>
                         <button class="custom-btn delete-btn" onclick="confirmDelete(\'' . $deleteUrl . '\', \'' . htmlspecialchars($name, ENT_QUOTES) . '\')"><i class="far fa-trash-alt" style="color: white;" alt="Delete"></i></button>
@@ -127,11 +129,12 @@ class OrganizationController extends Controller
         $name = $department->name_department;
         $kode = $department->kode_department ?? '';
         $deleteUrl = route('organization.delete', ['type' => $type, 'id' => $id]);
+        $statusBadge = (isset($department->is_active) && !$department->is_active) ? '<span class="badge bg-danger ms-1" style="font-size:0.6rem; vertical-align: middle;">Nonaktif</span>' : '';
         $deptNode = [
             'text' => ['name' => $name],
             'innerHTML' =>
             '<div class="custom-node">
-                <div class="custom-node-title">' . htmlspecialchars($name) . '</div>
+                <div class="custom-node-title">' . htmlspecialchars($name) . $statusBadge . '</div>
                 <div class="custom-node-actions">
                     <button class="custom-btn edit-btn" data-bs-toggle="modal" data-bs-target="#editModal" data-type="' . $type . '" data-id="' . $id . '" data-name="' . htmlspecialchars($name, ENT_QUOTES) . '" data-kode="' . htmlspecialchars($kode, ENT_QUOTES) . '"><i class="far fa-edit" style="color: white;" alt="Edit"></i></button>
                     <button class="custom-btn delete-btn" onclick="confirmDelete(\'' . $deleteUrl . '\', \'' . htmlspecialchars($name, ENT_QUOTES) . '\')"><i class="far fa-trash-alt" style="color: white;" alt="Delete"></i></button>
@@ -157,11 +160,12 @@ class OrganizationController extends Controller
             $name = $section->name_section;
             $kode = $section->kode_section ?? '';
             $deleteUrl = route('organization.delete', ['type' => $type, 'id' => $id]);
+            $statusBadge = (isset($section->is_active) && !$section->is_active) ? '<span class="badge bg-danger ms-1" style="font-size:0.6rem; vertical-align: middle;">Nonaktif</span>' : '';
             $sectionNode = [
                 'text' => ['name' => $name],
                 'innerHTML' =>
                 '<div class="custom-node">
-                    <div class="custom-node-title">' . htmlspecialchars($name) . '</div>
+                    <div class="custom-node-title">' . htmlspecialchars($name) . $statusBadge . '</div>
                     <div class="custom-node-actions">
                         <button class="custom-btn edit-btn" data-bs-toggle="modal" data-bs-target="#editModal" data-type="' . $type . '" data-id="' . $id . '" data-name="' . htmlspecialchars($name, ENT_QUOTES) . '" data-kode="' . htmlspecialchars($kode, ENT_QUOTES) . '"><i class="far fa-edit" style="color: white;" alt="Edit"></i></button>
                         <button class="custom-btn delete-btn" onclick="confirmDelete(\'' . $deleteUrl . '\', \'' . htmlspecialchars($name, ENT_QUOTES) . '\')"><i class="far fa-trash-alt" style="color: white;" alt="Delete"></i></button>
@@ -178,11 +182,12 @@ class OrganizationController extends Controller
                 $name = $unit->name_unit;
                 $kode = $unit->kode_unit ?? '';
                 $deleteUrl = route('organization.delete', ['type' => $type, 'id' => $id]);
+                $statusBadge = (isset($unit->is_active) && !$unit->is_active) ? '<span class="badge bg-danger ms-1" style="font-size:0.6rem; vertical-align: middle;">Nonaktif</span>' : '';
                 $sectionNode['children'][] = [
                     'text' => ['name' => $name],
                     'innerHTML' =>
                     '<div class="custom-node">
-                        <div class="custom-node-title">' . htmlspecialchars($name) . '</div>
+                        <div class="custom-node-title">' . htmlspecialchars($name) . $statusBadge . '</div>
                         <div class="custom-node-actions">
                             <button class="custom-btn edit-btn" data-bs-toggle="modal" data-bs-target="#editModal" data-type="' . $type . '" data-id="' . $id . '" data-name="' . htmlspecialchars($name, ENT_QUOTES) . '" data-kode="' . htmlspecialchars($kode, ENT_QUOTES) . '"><i class="far fa-edit" style="color: white;" alt="Edit"></i></button>
                             <button class="custom-btn delete-btn" onclick="confirmDelete(\'' . $deleteUrl . '\', \'' . htmlspecialchars($name, ENT_QUOTES) . '\')"><i class="far fa-trash-alt" style="color: white;" alt="Delete"></i></button>
@@ -204,11 +209,12 @@ class OrganizationController extends Controller
                 $name = $unit->name_unit;
                 $kode = $unit->kode_unit ?? '';
                 $deleteUrl = route('organization.delete', ['type' => $type, 'id' => $id]);
+                $statusBadge = (isset($unit->is_active) && !$unit->is_active) ? '<span class="badge bg-danger ms-1" style="font-size:0.6rem; vertical-align: middle;">Nonaktif</span>' : '';
                 $deptNode['children'][] = [
                     'text' => ['name' => $name],
                     'innerHTML' =>
                     '<div class="custom-node">
-                        <div class="custom-node-title">' . htmlspecialchars($name) . '</div>
+                        <div class="custom-node-title">' . htmlspecialchars($name) . $statusBadge . '</div>
                         <div class="custom-node-actions">
                             <button class="custom-btn edit-btn" data-bs-toggle="modal" data-bs-target="#editModal" data-type="' . $type . '" data-id="' . $id . '" data-name="' . htmlspecialchars($name, ENT_QUOTES) . '" data-kode="' . htmlspecialchars($kode, ENT_QUOTES) . '"><i class="far fa-edit" style="color: white;" alt="Edit"></i></button>
                             <button class="custom-btn delete-btn" onclick="confirmDelete(\'' . $deleteUrl . '\', \'' . htmlspecialchars($name, ENT_QUOTES) . '\')"><i class="far fa-trash-alt" style="color: white;" alt="Delete"></i></button>

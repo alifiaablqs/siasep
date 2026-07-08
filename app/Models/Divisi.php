@@ -30,6 +30,9 @@ class Divisi extends Model
      */
     protected $fillable = [
         'nm_divisi',
+        'kode_divisi',
+        'director_id_director',
+        'is_active',
     ];
 
     /**

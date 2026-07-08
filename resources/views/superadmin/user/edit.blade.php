@@ -170,21 +170,28 @@
 
                                     function renderOrgOptionsUserEdit($node, $currId, $currType, $level = 0) {
                                         $indent = str_repeat('&nbsp;', $level * 4);
+                                        $statusLabel = (!isset($node->is_active) || $node->is_active) ? '' : ' (Nonaktif)';
+
                                         if (isset($node->name_director)) {
                                             $sel = ($node->id_director == $currId && $currType == 'director') ? 'selected' : '';
-                                            echo "<option value='{$node->id_director}' data-type='director' {$sel}>{$indent}Direktur: {$node->name_director}</option>";
+                                            $disabledAttr = (!$sel && (isset($node->is_active) && !$node->is_active)) ? 'disabled' : '';
+                                            echo "<option value='{$node->id_director}' data-type='director' {$sel} {$disabledAttr}>{$indent}Direktur: {$node->name_director}{$statusLabel}</option>";
                                         } elseif (isset($node->nm_divisi)) {
                                             $sel = ($node->id_divisi == $currId && $currType == 'divisi') ? 'selected' : '';
-                                            echo "<option value='{$node->id_divisi}' data-type='divisi' {$sel}>{$indent}→ Divisi: {$node->nm_divisi}</option>";
+                                            $disabledAttr = (!$sel && (isset($node->is_active) && !$node->is_active)) ? 'disabled' : '';
+                                            echo "<option value='{$node->id_divisi}' data-type='divisi' {$sel} {$disabledAttr}>{$indent}&rarr; Divisi: {$node->nm_divisi}{$statusLabel}</option>";
                                         } elseif (isset($node->name_department)) {
                                             $sel = ($node->id_department == $currId && $currType == 'department') ? 'selected' : '';
-                                            echo "<option value='{$node->id_department}' data-type='department' {$sel}>{$indent}→ Departemen: {$node->name_department}</option>";
+                                            $disabledAttr = (!$sel && (isset($node->is_active) && !$node->is_active)) ? 'disabled' : '';
+                                            echo "<option value='{$node->id_department}' data-type='department' {$sel} {$disabledAttr}>{$indent}&rarr; Departemen: {$node->name_department}{$statusLabel}</option>";
                                         } elseif (isset($node->name_section)) {
                                             $sel = ($node->id_section == $currId && $currType == 'section') ? 'selected' : '';
-                                            echo "<option value='{$node->id_section}' data-type='section' {$sel}>{$indent}→ Bagian: {$node->name_section}</option>";
+                                            $disabledAttr = (!$sel && (isset($node->is_active) && !$node->is_active)) ? 'disabled' : '';
+                                            echo "<option value='{$node->id_section}' data-type='section' {$sel} {$disabledAttr}>{$indent}&rarr; Bagian: {$node->name_section}{$statusLabel}</option>";
                                         } elseif (isset($node->name_unit)) {
                                             $sel = ($node->id_unit == $currId && $currType == 'unit') ? 'selected' : '';
-                                            echo "<option value='{$node->id_unit}' data-type='unit' {$sel}>{$indent}→ Unit: {$node->name_unit}</option>";
+                                            $disabledAttr = (!$sel && (isset($node->is_active) && !$node->is_active)) ? 'disabled' : '';
+                                            echo "<option value='{$node->id_unit}' data-type='unit' {$sel} {$disabledAttr}>{$indent}&rarr; Unit: {$node->name_unit}{$statusLabel}</option>";
                                         }
                                         if (isset($node->subDirectors)) { foreach ($node->subDirectors as $subDir) renderOrgOptionsUserEdit($subDir, $currId, $currType, $level + 1); }
                                         if (isset($node->divisi)) { foreach ($node->divisi as $div) renderOrgOptionsUserEdit($div, $currId, $currType, $level + 1); }

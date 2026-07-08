@@ -28,6 +28,19 @@
         </div>
     </div>
 
+    {{-- Alert Verifikasi SIPO --}}
+    @if(isset($verifikasiPending) && $verifikasiPending > 0)
+        <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4 rounded-3" role="alert">
+            <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+            <div>
+                <h6 class="fw-bold mb-1">Perhatian: Verifikasi Aset (Dampak Sinkronisasi SIPO)</h6>
+                <span class="small text-dark">Terdapat <strong>{{ $verifikasiPending }}</strong> data aset yang memerlukan verifikasi karena perubahan organisasi/PIC dari sistem SIPO. 
+                <a href="{{ route('aset.verifikasi') }}" class="fw-bold text-navy text-decoration-none">Lihat Detail <i class="fas fa-arrow-right ms-1"></i></a>
+                </span>
+            </div>
+        </div>
+    @endif
+
     {{-- TOP CARDS: METRIKS --}}
     <div class="row g-3 mb-4">
         {{-- Card 1: Total Aset --}}

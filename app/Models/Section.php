@@ -9,7 +9,7 @@ class Section extends Model
 {
     protected $table = 'section';
     protected $primaryKey = 'id_section';
-    protected $fillable = ['name_section', 'department_id_department'];
+    protected $fillable = ['name_section', 'department_id_department', 'is_active'];
 
     public $timestamps = false;
 

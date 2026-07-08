@@ -357,6 +357,27 @@
                     clearInterval(waitForTreant);
                 }
             }, 100);
+            
+            // Tampilkan session success / error
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: {!! json_encode(session('success')) !!},
+                    confirmButtonColor: '#253070',
+                    customClass: { popup: 'rounded-4 shadow' }
+                });
+            @endif
+
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: {!! json_encode(session('error')) !!},
+                    confirmButtonColor: '#253070',
+                    customClass: { popup: 'rounded-4 shadow' }
+                });
+            @endif
         });
     </script>
     <script>

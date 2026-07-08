@@ -142,16 +142,19 @@
                                 @php
                                     function renderOrgOptions($node, $level = 0) {
                                         $indent = str_repeat('&nbsp;', $level * 4);
+                                        $statusLabel = (!isset($node->is_active) || $node->is_active) ? '' : ' (Nonaktif)';
+                                        $disabledAttr = (!isset($node->is_active) || $node->is_active) ? '' : ' disabled';
+
                                         if (isset($node->name_director)) {
-                                            echo "<option value='{$node->id_director}' data-type='director'>{$indent}Direktur: {$node->name_director}</option>";
+                                            echo "<option value='{$node->id_director}' data-type='director'{$disabledAttr}>{$indent}Direktur: {$node->name_director}{$statusLabel}</option>";
                                         } elseif (isset($node->nm_divisi)) {
-                                            echo "<option value='{$node->id_divisi}' data-type='divisi'>{$indent}→ Divisi: {$node->nm_divisi}</option>";
+                                            echo "<option value='{$node->id_divisi}' data-type='divisi'{$disabledAttr}>{$indent}&rarr; Divisi: {$node->nm_divisi}{$statusLabel}</option>";
                                         } elseif (isset($node->name_department)) {
-                                            echo "<option value='{$node->id_department}' data-type='department'>{$indent}→ Departemen: {$node->name_department}</option>";
+                                            echo "<option value='{$node->id_department}' data-type='department'{$disabledAttr}>{$indent}&rarr; Departemen: {$node->name_department}{$statusLabel}</option>";
                                         } elseif (isset($node->name_section)) {
-                                            echo "<option value='{$node->id_section}' data-type='section'>{$indent}→ Bagian: {$node->name_section}</option>";
+                                            echo "<option value='{$node->id_section}' data-type='section'{$disabledAttr}>{$indent}&rarr; Bagian: {$node->name_section}{$statusLabel}</option>";
                                         } elseif (isset($node->name_unit)) {
-                                            echo "<option value='{$node->id_unit}' data-type='unit'>{$indent}→ Unit: {$node->name_unit}</option>";
+                                            echo "<option value='{$node->id_unit}' data-type='unit'{$disabledAttr}>{$indent}&rarr; Unit: {$node->name_unit}{$statusLabel}</option>";
                                         }
                                         if (isset($node->subDirectors)) { foreach ($node->subDirectors as $subDir) renderOrgOptions($subDir, $level + 1); }
                                         if (isset($node->divisi)) { foreach ($node->divisi as $div) renderOrgOptions($div, $level + 1); }

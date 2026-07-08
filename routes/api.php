@@ -53,3 +53,4 @@ Route::middleware('auth:sanctum')->name('api.')->group(function () {
     Route::get('monitoring', [MonitoringApiController::class, 'index']);
     Route::post('monitoring', [MonitoringApiController::class, 'store']);
 });
+
